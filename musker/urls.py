@@ -25,7 +25,7 @@ urlpatterns = [
     path('user_challenges/', views.user_challenges, name='user_challenges'),
     path('accept/<int:challenge_id>/',
          views.accept_challenge, name='accept_challenge'),
-    path('accept/<int:challenge_id>/',
+    path('reject/<int:challenge_id>/',
          views.reject_challenge, name='reject_challenge'),
 
     # wallet page

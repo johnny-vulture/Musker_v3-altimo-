@@ -190,31 +190,6 @@ def register_user(request):
     return render(request, "register.html", {'form': form})
 
 
-"""
-def register_user(request):
-    form = SignUpForm()
-    if request.method == "POST":
-        form = SignUpForm(request.POST)
-        if form.is_valid():
-            form.save()
-            username = form.cleaned_data['username']
-            password = form.cleaned_data['password1']
-            # first_name = form.cleaned_data['first_name']
-            # second_name = form.cleaned_data['second_name']
-            # email = form.cleaned_data['email']
-            # Log in user
-            user = authenticate(username=username, password=password)
-            login(request, user)
-        
-
-            messages.success(
-                request, ("You have successfully registered! Welcome!"))
-            return redirect('home')
-
-    return render(request, "register.html", {'form': form})
-"""
-
-
 def update_user(request):
     if request.user.is_authenticated:
         current_user = User.objects.get(id=request.user.id)
@@ -356,15 +331,11 @@ def accept_challenge(request, challenge_id):
 
 
 def reject_challenge(request, challenge_id):
-
-    challenge = Challenge.objects.get(id=challenge_id)
+    challenge = get_object_or_404(Challenge, id=challenge_id)
     if challenge.receiver_username == request.user.username:
-
         challenge.status = 'rejected'
         challenge.save()
-        return redirect('profile', username=request.user.username)
-    else:
-        return redirect('home')  # Redirect to home or an error page
+    return redirect('home')
 
 # create a challange
 
