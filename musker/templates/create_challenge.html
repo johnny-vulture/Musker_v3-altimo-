@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Home</title>
+  </head>
+  <body>
+    {% if request.user.is_authenticated %}
+    <h1>Create Challenge</h1>
+    <form method="post" action="{% url 'fight1' %}">
+      {% csrf_token %} {{ form.as_p }}
+      <button type="submit">Send Challenge</button>
+    </form>
+    {% endif %}
+
+    <!-- Display other content (e.g., meeps) -->
+  </body>
+</html>

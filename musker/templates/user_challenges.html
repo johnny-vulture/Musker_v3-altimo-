@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User Challenges</title>
+  </head>
+  <body>
+    <h1>User Challenges</h1>
+    {% if challenges %}
+    <ul>
+      {% for challenge in challenges %}
+      <li>
+        Challenge ID: {{ challenge.id }} - {{ challenge.sender.username }}
+        challenged you
+        <form method="post" action="{% url 'accept_challenge' challenge.id %}">
+          {% csrf_token %}
+          <input type="submit" value="Accept" />
+        </form>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p>No challenges found.</p>
+    {% endif %}
+  </body>
+</html>

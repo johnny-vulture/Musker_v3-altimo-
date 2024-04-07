@@ -20,5 +20,28 @@ urlpatterns = [
     path('edit_meep/<int:pk>', views.edit_meep, name="edit_meep"),
     path('search/', views.search, name='search'),
 
+    path('fight/', views.challenge_page, name='fight'),
+    path('fight1/', views.create_challenge, name='fight1'),
+    path('user_challenges/', views.user_challenges, name='user_challenges'),
+    path('accept/<int:challenge_id>/',
+         views.accept_challenge, name='accept_challenge'),
+    path('accept/<int:challenge_id>/',
+         views.reject_challenge, name='reject_challenge'),
+
+    # wallet page
+    path("portfolio/", views.portfolio_view, name="portfolio"),
+
+    # dash page
+    path("dash/", views.dash_view, name="dash"),
+
+    # CRUD operations on cryptos
+    path("search/", views.search_view, name="search"),
+    path("add_to_portfolio/", views.add_to_portfolio_view, name="add_to_portfolio"),
+    path('delete_from_portfolio/<int:pk>/',
+         views.delete_from_portfolio_view, name='delete_from_portfolio'),
+
+
+
+
 
 ]
