@@ -12,7 +12,8 @@
       {% for challenge in challenges %}
       <li>
         Challenge ID: {{ challenge.id }} - {{ challenge.sender.username }}
-        challenged you
+        challenged you {{challenge.match_date}}
+
         <form
           method="post"
           action="{% url 'accept_challenge' challenge.id %}"

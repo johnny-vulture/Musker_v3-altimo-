@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.models import Group, User
-from .models import Profile, Meep, Challenge, Cryptocurrency
+from .models import Profile, Meep, Challenge, Cryptocurrency, Notification
 
 # Unregister Groups
 admin.site.unregister(Group)
@@ -36,3 +36,6 @@ admin.site.register(Challenge)
 
 # Register Cryptocurrency
 admin.site.register(Cryptocurrency)
+
+# Register notification
+admin.site.register(Notification)

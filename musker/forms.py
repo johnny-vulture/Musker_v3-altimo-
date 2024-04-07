@@ -73,9 +73,11 @@ class SignUpForm(UserCreationForm):
 
 
 class ChallengeForm(forms.ModelForm):
+    match_date = forms.DateTimeField(input_formats=['%Y-%m-%d'])
+
     class Meta:
         model = Challenge
-        fields = ['receiver_username']
+        fields = ['receiver_username', 'match_date']
 
 
 class AddToPortfolioForm(forms.Form):

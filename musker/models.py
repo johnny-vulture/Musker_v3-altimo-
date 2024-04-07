@@ -79,7 +79,7 @@ class Challenge(models.Model):
         User, related_name='received_challenges', null=True, blank=True, on_delete=models.SET_NULL)
     status = models.CharField(
         max_length=20, choices=STATUS_CHOICES, default='pending')
-
+    match_date = models.DateTimeField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
 ##############################################################################
@@ -113,3 +113,17 @@ class Portfolio(models.Model):
 
     def __str__(self):
         return f'{self.user.username} - Portfolio: {self.total_value}'
+
+
+###################################################################
+
+class Notification(models.Model):
+    sender = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='sent_notifications')
+    receiver = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='received_notifications')
+    creation_date = models.DateTimeField(auto_now_add=True)
+    match_date = models.DateTimeField(null=True)
+
+    def __str__(self):
+        return f'{self.sender} -> {self.receiver}: {self.creation_date}'
