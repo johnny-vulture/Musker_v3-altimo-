@@ -2,7 +2,7 @@ import requests
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from .models import Profile, Meep, Challenge, Cryptocurrency, Portfolio
-from .forms import MeepForm, SignUpForm, ProfilePicForm, ChallengeForm
+from .forms import MeepForm, SignUpForm, ProfilePicForm, ChallengeForm, AddToPortfolioForm
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
@@ -469,100 +469,80 @@ def dash_view(request):
 
 
 @login_required(login_url="login")
-def search_view(request):
-    if request.method != 'POST':
-        # return HTTP status code 405 if the request method is not POST along with a message
-        return HttpResponseNotAllowed(['POST'], 'Only POST requests are allowed for this view. Go back and search a cryptocurrency.')
-
-    if not (search_query := request.POST.get('search_query')):
-        return HttpResponse('No crypto currency found based on your search query.')
-
-    api_url = f'https://api.coingecko.com/api/v3/search?query={search_query}'
-    response = requests.get(api_url)
-    search_results = response.json()
-    try:
-        data = search_results['coins'][0]
-    except IndexError:
-        return HttpResponse('No crypto currency found based on your search query.')
-    coin_id = data['id']
-    image = data['large']
-    symbol = data['symbol']
-    market_cap = data['market_cap_rank']
-
-    # check if the crypto currency is already in the users portfolio and pass that information to the template
-    current_user = request.user
-    is_already_in_portfolio = False
-
-    user_cryptocurrencies = Cryptocurrency.objects.filter(user=current_user)
-    for cryptocurrency in user_cryptocurrencies:
-        if cryptocurrency.name.lower() == coin_id.lower():
-            is_already_in_portfolio = True
-
-    context = {
-        'data': data,
-        'coin_id': coin_id,
-        'image': image,
-        'symbol': symbol,
-        'market_cap': market_cap,
-        'is_already_in_portfolio': is_already_in_portfolio,
-    }
-    return render(request, 'search_crypto.html', context)
-
-
-@login_required(login_url="login")
 def add_to_portfolio_view(request):
-    if request.method != 'POST':
-        return HttpResponse('Need a crypto currency to add to your portfolio. Go back to the home page and search for a crypto currency.')
+    if request.method == 'POST':
+        form = AddToPortfolioForm(request.POST)
+        if form.is_valid():
+            coin_id = form.cleaned_data['coin_id']
+            quantity = form.cleaned_data['quantity']
 
-    # get values from the form
-    coin_id = request.POST.get('id')
-    quantity = request.POST.get('quantity')
-    print(coin_id)
+            # print(coin_id)
+            # print(quantity)
 
-    # get the crypto currency data from the coingecko api based on the coin id
-    api_url = f'https://api.coingecko.com/api/v3/coins/{coin_id}'
-    response = requests.get(api_url)
-    data = response.json()
-    print(data)
-    # store the name, symbol, current price, and market cap rank of the crypto currency
-    user = request.user
-    name = data['name']
-    id_from_api = data['id']
-    symbol = data['symbol']
-    current_price = data['market_data']['current_price']['usd']
+            # Get cryptocurrency data from the CoinGecko API based on the coin ID
+            api_url = f'https://api.coingecko.com/api/v3/coins/{coin_id}'
+            response = requests.get(api_url)
 
-    try:
-        # save the crypto currency to the database
-        crypto_currency = Cryptocurrency.objects.create(
-            user=user,
-            name=name,
-            id_from_api=id_from_api,
-            symbol=symbol,
-            quantity=quantity,
-            current_price=current_price,
-        )
-    except IntegrityError:
-        crypto_currency = Cryptocurrency.objects.get(user=user, name=name)
-        crypto_currency.quantity += int(quantity)
+            if response.status_code != 200:
+                messages.error(
+                    request, 'Failed to fetch cryptocurrency data from CoinGecko API.')
+                return redirect('home')
 
-    crypto_currency.save()
+            data = response.json()
 
-    # calculate the total value of the crypto currency
-    total_value = int(quantity) * int(current_price)
+            # Extract cryptocurrency information
+            try:
+                name = data['name']
+                symbol = data['symbol']
+                current_price = data['market_data']['current_price']['usd']
+            except KeyError:
+                messages.error(
+                    request, 'Failed to extract cryptocurrency information from API response.')
+                return redirect('home')
 
-    # save the total value of the crypto currency to the database in the portfolio model
-    # check if the user already has a portfolio
-    if Portfolio.objects.filter(user=user).exists():
-        portfolio = Portfolio.objects.get(user=user)
-        portfolio.total_value += total_value
-    else:
-        portfolio = Portfolio(user=user, total_value=total_value)
+            user = request.user
 
-    portfolio.save()
-    messages.success(request, f'{name} has been added to your portfolio.')
+            print('past first one')
 
-    # if all the above steps are successful, redirect the user to the portfolio page
-    return redirect('portfolio')
+            try:
+
+                # Save the cryptocurrency to the database
+                crypto_currency, created = Cryptocurrency.objects.get_or_create(
+                    user=user,
+                    id_from_api=coin_id,
+                    defaults={'name': name, 'symbol': symbol,
+                              'quantity': quantity, 'current_price': current_price}
+                )
+                print('one top')
+                if not created:
+                    crypto_currency.quantity += int(quantity)
+                    crypto_currency.save()
+
+                # Calculate the total value of the cryptocurrency
+                total_value = int(quantity) * current_price
+                print('one bottom')
+
+                # save the total value of the crypto currency to the database in the portfolio model
+                # check if the user already has a portfolio
+                if Portfolio.objects.filter(user=user).exists():
+                    portfolio = Portfolio.objects.get(user=user)
+                    portfolio.total_value += total_value
+                else:
+                    portfolio = Portfolio(user=user, total_value=total_value)
+
+                portfolio.save()
+                messages.success(
+                    request, f'{name} has been added to your portfolio.')
+
+                # if all the above steps are successful, redirect the user to the portfolio page
+                return redirect('portfolio')
+            except IntegrityError:
+                messages.error(
+                    request, 'Failed to save cryptocurrency to the database.')
+                return redirect('home')
+        else:
+            form = AddToPortfolioForm()
+            return render(request, 'portfolio.html', {'form': form})
 
 
 @login_required(login_url="login")
@@ -592,3 +572,40 @@ def delete_from_portfolio_view(request, pk):
         request, f'{crypto_currency.name} has been deleted from your portfolio.')
 
     return redirect('portfolio')
+
+###########################################################
+
+
+def search_crypto(request):
+    if request.method == 'POST':
+        search_query = request.POST.get('search_query', '')
+        result = search_view(search_query)
+        if isinstance(result, str):
+            context = {'error_message': result}
+        else:
+            context = {'crypto_details': result}
+        return render(request, 'crypto_search_result.html', context)
+    else:
+        return render(request, 'crypto_search_form.html')
+
+
+def search_view(search_query):
+    api_url = f'https://api.coingecko.com/api/v3/search?query={search_query}'
+    response = requests.get(api_url)
+    search_results = response.json()
+    try:
+        data = search_results['coins'][0]
+    except IndexError:
+        return 'No cryptocurrency found based on your search query.'
+    coin_id = data['id']
+    image = data['large']
+    symbol = data['symbol']
+    market_cap = data['market_cap_rank']
+
+    context = {
+        'coin_id': coin_id,
+        'image': image,
+        'symbol': symbol,
+        'market_cap': market_cap,
+    }
+    return context

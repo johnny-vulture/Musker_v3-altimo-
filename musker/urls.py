@@ -35,7 +35,8 @@ urlpatterns = [
     path("dash/", views.dash_view, name="dash"),
 
     # CRUD operations on cryptos
-    path("search/", views.search_view, name="search"),
+    # path("search_crypto/", views.search_view, name="search_crypto"),
+    path('crypto/', views.search_crypto, name='crypto'),
     path("add_to_portfolio/", views.add_to_portfolio_view, name="add_to_portfolio"),
     path('delete_from_portfolio/<int:pk>/',
          views.delete_from_portfolio_view, name='delete_from_portfolio'),

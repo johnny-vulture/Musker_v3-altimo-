@@ -30,11 +30,27 @@
       </div>
       {% endfor %} {% endif %}
       <!-- Content -->
-      {% if user_cryptocurrencies %}
-      <h1 class="mb-4 custom-heading">PORTFOLIP</h1>
+      <h1 class="mb-4 custom-heading">PORTFOLIO</h1>
       <h1 class="mb-4 mt-5 custom-heading">
         Wallet for {{ current_user|upper }}
       </h1>
+      <!-- Search Form -->
+      <div class="row mb-4">
+        <div class="col-md-6 offset-md-3">
+          <form action="{% url 'crypto' %}" method="post" class="d-flex">
+            {% csrf_token %}
+            <input
+              type="text"
+              name="search_query"
+              class="form-control me-2"
+              placeholder="Search for cryptocurrency"
+              aria-label="Search"
+            />
+            <button type="submit" class="btn btn-primary">Search</button>
+          </form>
+        </div>
+      </div>
+      <!-- Portfolio Table -->
       <div class="table-responsive">
         <table class="table table-striped mb-4 mt-2 custom-table">
           <thead>
@@ -65,16 +81,6 @@
         <h4 class="mb-0 text-light">Total Portfolio Value</h4>
         <p class="mt-2 display-4 text-light">${{ new_portfolio_value }}</p>
       </div>
-      {% else %}
-      <div class="alert alert-danger my-3 p-3 rounded text-center text-light">
-        You have not added any cryptocurrencies to your portfolio yet.
-      </div>
-      <p>
-        <a class="btn btn-primary" href="{% url 'home' %}"
-          >Add Cryptocurrencies</a
-        >
-      </p>
-      {% endif %}
     </div>
 
     <!-- JavaScript -->
