@@ -1,7 +1,7 @@
 import requests
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from .models import Profile, Meep, Challenge, Cryptocurrency, Portfolio
+from .models import Profile, Meep, Challenge, Cryptocurrency, Portfolio, ChallengeInvoice
 from .forms import MeepForm, SignUpForm, ProfilePicForm, ChallengeForm, AddToPortfolioForm
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -28,8 +28,10 @@ def home(request):
                 messages.success(request, ("Your Meep Has Been Posted!"))
                 return redirect('home')
 
+        challenges = Challenge.objects.all().order_by("-created_at")
+        invoices = ChallengeInvoice.objects.all().order_by("-created_at")
         meeps = Meep.objects.all().order_by("-created_at")
-        return render(request, 'home.html', {"meeps": meeps, "form": form})
+        return render(request, 'home.html', {"meeps": meeps, "invoices": invoices, "challenges": challenges, "form": form})
     else:
         meeps = Meep.objects.all().order_by("-created_at")
         return render(request, 'home.html', {"meeps": meeps})

@@ -1,6 +1,6 @@
 from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
-from musker.models import Challenge, Notification
+from musker.models import Challenge, Notification, ChallengeInvoice
 from django.core.mail import EmailMessage, send_mail
 
 
@@ -12,6 +12,20 @@ def challenge_pre_save_receiver(sender, instance, *args, **kwargs):
             # Create a notification
             Notification.objects.create(
                 sender=instance.sender, receiver=instance.receiver, match_date=instance.match_date)
+            # Create ChallengeInvoice
+            ChallengeInvoice.objects.create(
+                challenge=instance,
+                receiver_username_iv=instance.receiver.username,
+                sender_username_iv=instance.sender.username,
+                sender_Portfolio_init_price=instance.sender.portfolios.first(
+                ).total_value,  # accessing the first portfolio object
+                receiver_Portfolio_init_price=instance.receiver.portfolios.first(
+                ).total_value,  # accessing the first portfolio object
+                winner='TBA',
+                loser='TBA'
+                # sender_Portfolio_fin_price=None,  # Set to None or another default value
+                # receiver_Portfolio_fin_price=None,  # Set to None or another default value
+            )
     else:  # If the instance is being created
         pass  # No action needed for now
 

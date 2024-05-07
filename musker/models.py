@@ -81,6 +81,8 @@ class Challenge(models.Model):
         max_length=20, choices=STATUS_CHOICES, default='pending')
     match_date = models.DateTimeField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    winner = models.TextField(max_length=100, default='pending')
+    loser = models.TextField(max_length=100, default='pending')
 
 ##############################################################################
 
@@ -127,3 +129,21 @@ class Notification(models.Model):
 
     def __str__(self):
         return f'{self.sender} -> {self.receiver}: {self.creation_date}'
+
+####################################################################
+
+
+class ChallengeInvoice(models.Model):
+    challenge = models.ForeignKey(Challenge, on_delete=models.CASCADE)
+    receiver_username_iv = models.TextField(max_length=100, default='pending')
+    sender_username_iv = models.TextField(max_length=100, default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    sender_Portfolio_init_price = models.IntegerField(default=None)
+    # sender_Portfolio_fin_price = models.IntegerField(default=None)
+
+    receiver_Portfolio_init_price = models.IntegerField(default=None)
+    # receiver_Portfolio_fin_price = models.IntegerField(default=None)
+
+    winner = models.TextField(max_length=100, default='pending')
+    loser = models.TextField(max_length=100, default='pending')
