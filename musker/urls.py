@@ -12,13 +12,11 @@ urlpatterns = [
     path('logout', views.logout_user, name='logout'),
     path('register/', views.register_user, name='register'),
     path('update_user/', views.update_user, name='update_user'),
-    path('meep_like/<int:pk>', views.meep_like, name="meep_like"),
-    path('meep_show/<int:pk>', views.meep_show, name="meep_show"),
+
     path('unfollow/<int:pk>', views.unfollow, name="unfollow"),
     path('follow/<int:pk>', views.follow, name="follow"),
-    path('delete_meep/<int:pk>', views.delete_meep, name="delete_meep"),
-    path('edit_meep/<int:pk>', views.edit_meep, name="edit_meep"),
-    path('search/', views.search, name='search'),
+
+
 
     path('fight/', views.challenge_page, name='fight'),
     path('fight1/', views.create_challenge, name='fight1'),

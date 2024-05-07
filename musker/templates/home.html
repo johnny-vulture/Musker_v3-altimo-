@@ -5,17 +5,21 @@
     <div class="row">
       <div class="col-8 bg-black">
         <br />
-        {% for invoice in invoices %}
-          <div class="card" style="width: 12rem">
-            <div class="card-body">
-              <h5 class="card-title">number: {{ invoice.challenge.id }}</h5>
-              <h6 class="card-text mb-2 text-muted">player 1: {{ invoice.sender_username_iv }}</h6>
-              <h6 class="card-text mb-2 text-muted">player 2: {{ invoice.receiver_username_iv }}</h6>
-              <p class="card-text">start date: {{ invoice.created_at }}</p>
-              <a href="#" class="card-link">transaction on block explorer</a>
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+          {% for invoice in invoices %}
+            <div class="col">
+              <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title">number: {{ invoice.challenge.id }}</h5>
+                  <h6 class="card-text mb-2 text-muted">player 1: {{ invoice.sender_username_iv }}</h6>
+                  <h6 class="card-text mb-2 text-muted">player 2: {{ invoice.receiver_username_iv }}</h6>
+                  <p class="card-text">start date: {{ invoice.created_at }}</p>
+                  <a href="#" class="card-link">transaction on block explorer</a>
+                </div>
+              </div>
             </div>
-          </div>
-        {% endfor %}
+          {% endfor %}
+        </div>
       </div>
       <div class="col ml-auto bg-danger">
         <div class="panel p-3">
@@ -32,7 +36,7 @@
             {% endfor %}
           </ul>
           <hr />
-          <h4 class="text-white">Recieved Challenges</h4>
+          <h4 class="text-white">Received Challenges</h4>
           <ul class="list-group">
             {% for challenge in challenges %}
               {% if challenge.receiver_username == request.user.username %}

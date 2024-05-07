@@ -1,8 +1,8 @@
 import requests
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from .models import Profile, Meep, Challenge, Cryptocurrency, Portfolio, ChallengeInvoice
-from .forms import MeepForm, SignUpForm, ProfilePicForm, ChallengeForm, AddToPortfolioForm
+from .models import Profile, Challenge, Cryptocurrency, Portfolio, ChallengeInvoice
+from .forms import SignUpForm, ProfilePicForm, ChallengeForm, AddToPortfolioForm
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
@@ -19,22 +19,13 @@ mnemonic = Mnemonic().generate()
 
 def home(request):
     if request.user.is_authenticated:
-        form = MeepForm(request.POST or None)
-        if request.method == "POST":
-            if form.is_valid():
-                meep = form.save(commit=False)
-                meep.user = request.user
-                meep.save()
-                messages.success(request, ("Your Meep Has Been Posted!"))
-                return redirect('home')
 
         challenges = Challenge.objects.all().order_by("-created_at")
         invoices = ChallengeInvoice.objects.all().order_by("-created_at")
-        meeps = Meep.objects.all().order_by("-created_at")
-        return render(request, 'home.html', {"meeps": meeps, "invoices": invoices, "challenges": challenges, "form": form})
+        return render(request, 'home.html', {"invoices": invoices, "challenges": challenges})
     else:
-        meeps = Meep.objects.all().order_by("-created_at")
-        return render(request, 'home.html', {"meeps": meeps})
+
+        return render(request, 'home.html', {})
 
 
 def profile_list(request):
@@ -90,7 +81,6 @@ def follow(request, pk):
 def profile(request, pk):
     if request.user.is_authenticated:
         profile = Profile.objects.get(user_id=pk)
-        meeps = Meep.objects.filter(user_id=pk).order_by("-created_at")
 
         # Post Form logic
         if request.method == "POST":
@@ -106,7 +96,7 @@ def profile(request, pk):
             # Save the profile
             current_user_profile.save()
 
-        return render(request, "profile.html", {"profile": profile, "meeps": meeps})
+        return render(request, "profile.html", {"profile": profile})
     else:
         messages.success(
             request, ("You Must Be Logged In To View This Page..."))
@@ -215,89 +205,6 @@ def update_user(request):
             request, ("You Must Be Logged In To View That Page..."))
         return redirect('home')
 
-
-def meep_like(request, pk):
-    if request.user.is_authenticated:
-        meep = get_object_or_404(Meep, id=pk)
-        if meep.likes.filter(id=request.user.id):
-            meep.likes.remove(request.user)
-        else:
-            meep.likes.add(request.user)
-
-        return redirect(request.META.get("HTTP_REFERER"))
-
-    else:
-        messages.success(
-            request, ("You Must Be Logged In To View That Page..."))
-        return redirect('home')
-
-
-def meep_show(request, pk):
-    meep = get_object_or_404(Meep, id=pk)
-    if meep:
-        return render(request, "show_meep.html", {'meep': meep})
-    else:
-        messages.success(request, ("That Meep Does Not Exist..."))
-        return redirect('home')
-
-
-def delete_meep(request, pk):
-    if request.user.is_authenticated:
-        meep = get_object_or_404(Meep, id=pk)
-        # Check to see if you own the meep
-        if request.user.username == meep.user.username:
-            # Delete The Meep
-            meep.delete()
-
-            messages.success(request, ("The Meep Has Been Deleted!"))
-            return redirect(request.META.get("HTTP_REFERER"))
-        else:
-            messages.success(request, ("You Don't Own That Meep!!"))
-            return redirect('home')
-
-    else:
-        messages.success(request, ("Please Log In To Continue..."))
-        return redirect(request.META.get("HTTP_REFERER"))
-
-
-def edit_meep(request, pk):
-    if request.user.is_authenticated:
-        # Grab The Meep!
-        meep = get_object_or_404(Meep, id=pk)
-
-        # Check to see if you own the meep
-        if request.user.username == meep.user.username:
-
-            form = MeepForm(request.POST or None, instance=meep)
-            if request.method == "POST":
-                if form.is_valid():
-                    meep = form.save(commit=False)
-                    meep.user = request.user
-                    meep.save()
-                    messages.success(request, ("Your Meep Has Been Updated!"))
-                    return redirect('home')
-            else:
-                return render(request, "edit_meep.html", {'form': form, 'meep': meep})
-
-        else:
-            messages.success(request, ("You Don't Own That Meep!!"))
-            return redirect('home')
-
-    else:
-        messages.success(request, ("Please Log In To Continue..."))
-        return redirect('home')
-
-
-def search(request):
-    if request.method == "POST":
-        # Grab the form field input
-        search = request.POST['search']
-        # Search the database
-        searched = Meep.objects.filter(body__contains=search)
-
-        return render(request, 'search.html', {'search': search, 'searched': searched})
-    else:
-        return render(request, 'search.html', {})
 
 ###########################################################################
 
